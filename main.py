@@ -1,6 +1,19 @@
  
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from database import db, User, Role, SitterService, ServiceType, Booking, BookingStatus, Payment, init_app
+from datetime import datetime, date
+
+# ---- Setting Constants ----
+
+SYDNEY_SUBURBS = [
+    "Alexandria", "Ashfield", "Balmain", "Bankstown", "Bondi", "Bondi Beach", "Bondi Junction",
+    "Burwood", "Camperdown", "Canterbury", "Chatswood", "Coogee", "Cronulla", "Darlinghurst",
+    "Darlington", "Drummoyne", "Dulwich Hill", "Edgecliff", "Enmore", "Erskineville", "Glebe",
+    "Hurstville", "Kensington", "Kingsford", "Kirribilli", "Leichhardt", "Maroubra", "Marrickville",
+    "Mascot", "Matraville", "Moore Park", "Newtown", "North Sydney", "Paddington", "Parramatta",
+    "Potts Point", "Pyrmont", "Randwick", "Redfern", "Rockdale", "Rosebery", "Rozelle", "Rushcutters Bay",
+    "Surry Hills", "Sydney CBD", "Ultimo", "Waterloo", "Waverley", "Woollahra", "Zetland"
+]
 
 # ---- App and Config ----
 app = Flask(__name__)
@@ -122,7 +135,7 @@ def reset_db():
 # ---- Owner Dashboard ----
 
 
-@app.route("/owner-dashboard")
+@app.route("/owner-dashboard", methods=["GET", "POST"])
 def owner_dashboard():
     user = User.query.filter_by(email=session.get('user_email')).first()
     
@@ -136,14 +149,14 @@ def owner_dashboard():
         
         db.session.commit()
         flash("Profile updated successfully!", "success")
-        return redirect(url_for("owner_dash"))
+        return redirect(url_for("owner_dashboard"))
     
-    return render_template("owner_dash.html", user=user)
+    return render_template("owner_dashboard.html", user=user, suburbs=SYDNEY_SUBURBS)
     
 
 # ---- Sitter Dashboard ----
 
-@app.route("/sitter-dashboard")  
+@app.route("/sitter-dashboard", methods=["GET", "POST"])  
 def sitter_dashboard():
     user = User.query.filter_by(email=session.get('user_email')).first()
     
@@ -165,11 +178,13 @@ def sitter_dashboard():
             setup_sitter_services(user)
             flash("Services setup successfully!", "success")
             
-        return redirect(url_for("sitter_dash"))
+        return redirect(url_for("sitter_dashboard"))
 
     # Get existing services
     services = SitterService.query.filter_by(sitter_id=user.id).all()
-    return render_template("sitter_dash.html", user=user, services=services)
+    return render_template("sitter_dashboard.html", user=user, services=services, suburbs=SYDNEY_SUBURBS)
+
+#---- Config Service per Sitter ----
 
 def setup_sitter_services(user):
     """Create or update the 3 fixed services for a sitter"""
@@ -201,20 +216,120 @@ def setup_sitter_services(user):
     
     db.session.commit()
 
+#---- Sitter Inbox ----
 
 @app.route("/sitter-inbox")
 def sitter_inbox():
-    return "Sitter Inbox - Coming Soon"  # Placeholder for now
+    # Get current user (sitter)
+    sitter = User.query.filter_by(email=session.get('user_email')).first()
+    
+    # Get all bookings for this sitter
+    bookings = Booking.query.filter_by(sitter_id=sitter.id).order_by(Booking.created_at.desc()).all()
+    
+    return render_template("sitter_inbox.html", bookings=bookings)
 
+#---- Owner Bookings ----
 
 @app.route("/owner-bookings")
 def owner_bookings():
-    return "Owner Bookings - Coming Soon"  # Placeholder for now
+    # Get current user (owner)
+    owner = User.query.filter_by(email=session.get('user_email')).first()
+    
+    # Get all bookings for this owner
+    bookings = Booking.query.filter_by(owner_id=owner.id).order_by(Booking.created_at.desc()).all()
+    
+    return render_template("owner_bookings.html", bookings=bookings)
 
+#---- Search Route ----
 
 @app.route("/search")
 def search():
-    return "Search Page - Coming Soon"  # Placeholder for now
+    # Get search filters from URL parameters
+    suburb = request.args.get("suburb", "")
+    service_type = request.args.get("service_type", "")
+    
+    # Build the query
+    query = SitterService.query.join(User).filter(
+        SitterService.is_active == True,
+        User.first_name.isnot(None)  # Only show sitters who completed profile
+    )
+    
+    # Apply filters
+    if suburb:
+        query = query.filter(User.suburb == suburb)
+    
+    if service_type:
+        query = query.filter(SitterService.service_type == ServiceType(service_type))
+    
+    # Get results
+    sitter_services = query.all()
+    
+    return render_template("search.html", 
+                         sitter_services=sitter_services, 
+                         suburb=suburb, 
+                         service_type=service_type,
+                         suburbs=SYDNEY_SUBURBS)
+
+#---- Booking Route ----
+
+@app.route("/book-service/<int:sitter_id>", methods=["GET", "POST"])
+def book_service(sitter_id):
+    sitter = User.query.get_or_404(sitter_id)
+    service_type = request.args.get("service_type")
+    
+    # Get the specific service
+    service = SitterService.query.filter_by(
+        sitter_id=sitter_id, 
+        service_type=ServiceType(service_type)
+    ).first_or_404()
+    
+    if request.method == "POST":
+        # Get current user (owner)
+        owner = User.query.filter_by(email=session.get('user_email')).first()
+        
+        # Create booking
+        new_booking = Booking(
+            owner_id=owner.id,
+            sitter_id=sitter_id,
+            service_id=service.id,
+            start_date=datetime.strptime(request.form.get("start_date"), '%Y-%m-%d'),
+            end_date=datetime.strptime(request.form.get("end_date"), '%Y-%m-%d'),
+            fixed_amount=service.fixed_rate,
+            pet_type=request.form.get("pet_type"),
+            pet_name=request.form.get("pet_name"),
+            special_instructions=request.form.get("special_instructions", "")
+        )
+        
+        db.session.add(new_booking)
+        db.session.commit()
+        
+        flash(f"Booking request sent to {sitter.first_name}!", "success")
+        return redirect(url_for("owner_bookings"))
+    
+    return render_template("book_service.html", 
+                         sitter=sitter, 
+                         service=service, 
+                         service_type=service_type,
+                         now=datetime.now)
+
+# ---- Update Booking Status ----
+
+@app.route("/update-booking-status/<int:booking_id>", methods=["POST"])
+def update_booking_status(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    new_status = request.form.get("status")
+    
+    booking.status = BookingStatus(new_status)
+    booking.updated_at = datetime.utcnow()
+    
+    if new_status == 'confirmed':
+        booking.confirmed_at = datetime.utcnow()
+    
+    db.session.commit()
+    
+    flash(f"Booking {new_status} successfully!", "success")
+    return redirect(url_for("sitter_inbox"))
+
 
 # ---- Run app ----
 if __name__ == "__main__":

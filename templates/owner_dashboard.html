@@ -62,9 +62,13 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="suburb" class="form-label">Suburb</label>
-                                    <input type="text" name="suburb" id="suburb" class="form-control" 
-                                           value="{{ user.suburb or '' }}" required>
-                                </div>
+                                        <select name="suburb" id="suburb" class="form-select" required>
+                                        <option value="" disabled selected>Select your suburb</option>
+                                        {% for suburb in suburbs %}
+                                        <option value="{{ suburb }}" {% if user.suburb == suburb %}selected{% endif %}>{{ suburb }}</option>
+                                        {% endfor %}
+                                        </select>
+                            </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="city" class="form-label">City</label>
                                     <input type="text" name="city" id="city" class="form-control" 

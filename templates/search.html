@@ -29,21 +29,26 @@
                         <form method="GET" action="{{ url_for('search') }}">
                             <div class="mb-3">
                                 <label for="suburb" class="form-label">Suburb</label>
-                                <input type="text" name="suburb" id="suburb" class="form-control" 
-                                       placeholder="e.g., Bondi, Manly">
+                                <select name="suburb" id="suburb" class="form-select">
+                                    <option value="">All Suburbs</option>
+                                    {% for suburb in suburbs %}
+                                        <option value="{{ suburb }}" {% if suburb_filter == suburb %}selected{% endif %}>{{ suburb }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                             
                             <div class="mb-3">
                                 <label for="service_type" class="form-label">Service Type</label>
                                 <select name="service_type" id="service_type" class="form-select">
                                     <option value="">All Services</option>
-                                    <option value="boarding">Boarding</option>
-                                    <option value="daycare">Daycare</option>
-                                    <option value="walking">Walking</option>
+                                    <option value="boarding" {% if service_type == 'boarding' %}selected{% endif %}>Boarding</option>
+                                    <option value="daycare" {% if service_type == 'daycare' %}selected{% endif %}>Daycare</option>
+                                    <option value="walking" {% if service_type == 'walking' %}selected{% endif %}>Walking</option>
                                 </select>
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100">Search</button>
+                            <a href="{{ url_for('search') }}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
                         </form>
                     </div>
                 </div>
@@ -55,85 +60,90 @@
                         <h2 class="card-title">Find Pet Sitters</h2>
                         <p class="text-muted">Browse available pet sitters in your area</p>
 
+                        <!-- Search Results Count -->
+                        {% if sitter_services %}
+                            <p class="text-success mb-4">
+                                <strong>Found {{ sitter_services|length }} service(s) matching your criteria</strong>
+                            </p>
+                        {% endif %}
+
                         <!-- Search Results -->
                         <div class="row">
-                            <!-- Example Sitter Card 1 -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Sarah Johnson</h5>
-                                        <p class="card-text text-muted">Bondi, Sydney</p>
-                                        
-                                        <div class="mb-3">
-                                            <strong>Services & Rates:</strong>
-                                            <ul class="list-unstyled mt-2">
-                                                <li>🐕 Boarding: <strong>$50.00</strong></li>
-                                                <li>🏠 Daycare: <strong>$35.00</strong></li>
-                                                <li>🚶 Walking: <strong>$25.00</strong></li>
-                                            </ul>
+                            {% if sitter_services %}
+                                <!-- Group services by sitter -->
+                                {% set sitters_dict = {} %}
+                                {% for service in sitter_services %}
+                                    {% if service.sitter.id not in sitters_dict %}
+                                        {% set _ = sitters_dict.update({service.sitter.id: {'sitter': service.sitter, 'services': []}}) %}
+                                    {% endif %}
+                                    {% set _ = sitters_dict[service.sitter.id]['services'].append(service) %}
+                                {% endfor %}
+                                
+                                {% for sitter_id, sitter_data in sitters_dict.items() %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-header bg-light">
+                                            <h5 class="card-title mb-0">{{ sitter_data.sitter.first_name }} {{ sitter_data.sitter.last_name }}</h5>
                                         </div>
-                                        
-                                        <div class="d-grid gap-2">
-                                            <a href="#" class="btn btn-primary">Book Now</a>
-                                            <a href="#" class="btn btn-outline-secondary">View Profile</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Example Sitter Card 2 -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Mike Thompson</h5>
-                                        <p class="card-text text-muted">Manly, Sydney</p>
-                                        
-                                        <div class="mb-3">
-                                            <strong>Services & Rates:</strong>
-                                            <ul class="list-unstyled mt-2">
-                                                <li>🐕 Boarding: <strong>$45.00</strong></li>
-                                                <li>🏠 Daycare: <strong>$30.00</strong></li>
-                                                <li>🚶 Walking: <strong>$20.00</strong></li>
-                                            </ul>
-                                        </div>
-                                        
-                                        <div class="d-grid gap-2">
-                                            <a href="#" class="btn btn-primary">Book Now</a>
-                                            <a href="#" class="btn btn-outline-secondary">View Profile</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Example Sitter Card 3 -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Emma Wilson</h5>
-                                        <p class="card-text text-muted">Surry Hills, Sydney</p>
-                                        
-                                        <div class="mb-3">
-                                            <strong>Services & Rates:</strong>
-                                            <ul class="list-unstyled mt-2">
-                                                <li>🐕 Boarding: <strong>$55.00</strong></li>
-                                                <li>🏠 Daycare: <strong>$40.00</strong></li>
-                                                <li>🚶 Walking: <strong>$28.00</strong></li>
-                                            </ul>
-                                        </div>
-                                        
-                                        <div class="d-grid gap-2">
-                                            <a href="#" class="btn btn-primary">Book Now</a>
-                                            <a href="#" class="btn btn-outline-secondary">View Profile</a>
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                                <i class="bi bi-geo-alt"></i> 
+                                                <strong>{{ sitter_data.sitter.suburb }}, {{ sitter_data.sitter.city }}</strong>
+                                            </p>
+                                            {% if sitter_data.sitter.phone %}
+                                            <p class="card-text">
+                                                <i class="bi bi-telephone"></i> 
+                                                {{ sitter_data.sitter.phone }}
+                                            </p>
+                                            {% endif %}
+                                            
+                                            <hr>
+                                            
+                                            <h6>Services Offered:</h6>
+                                            <div class="services-list">
+                                                {% for service in sitter_data.services %}
+                                                <div class="service-item mb-2 p-2 border rounded">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            {% if service.service_type.value == 'boarding' %}
+                                                                <span class="badge bg-primary">🐕 Boarding</span>
+                                                            {% elif service.service_type.value == 'daycare' %}
+                                                                <span class="badge bg-success">🏠 Daycare</span>
+                                                            {% elif service.service_type.value == 'walking' %}
+                                                                <span class="badge bg-info">🚶 Walking</span>
+                                                            {% endif %}
+                                                            <strong class="ms-2">${{ "%.2f"|format(service.fixed_rate) }}</strong>
+                                                        </div>
+                                                        <a href="{{ url_for('book_service', sitter_id=sitter_data.sitter.id, service_type=service.service_type.value) }}" 
+                                                           class="btn btn-primary btn-sm">Book Now</a>
+                                                    </div>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Empty State -->
-                        <div class="text-center py-5" id="emptyState" style="display: none;">
-                            <h5>No sitters found</h5>
-                            <p class="text-muted">Try adjusting your search filters to find more results.</p>
+                                {% endfor %}
+                            {% else %}
+                                <div class="col-12">
+                                    <div class="text-center py-5">
+                                        <div class="mb-3">
+                                            <i class="bi bi-search" style="font-size: 3rem; color: #6c757d;"></i>
+                                        </div>
+                                        <h5>No sitters found</h5>
+                                        <p class="text-muted">
+                                            {% if suburb or service_type %}
+                                                Try adjusting your search filters to find more results.
+                                            {% else %}
+                                                No sitters have set up their services yet. Check back later!
+                                            {% endif %}
+                                        </p>
+                                        {% if suburb or service_type %}
+                                        <a href="{{ url_for('search') }}" class="btn btn-primary">Clear Filters</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -141,6 +151,8 @@
         </div>
     </div>
 
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
