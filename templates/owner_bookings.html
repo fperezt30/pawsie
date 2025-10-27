@@ -53,6 +53,7 @@
                                         <th>Amount</th>
                                         <th>Status</th>
                                         <th>Booked On</th>
+                                        <th>Payment</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -93,6 +94,17 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ booking.created_at.strftime('%d/%m/%Y') }}</td>
+                                        <td>
+                                            {% if booking.status.value == 'confirmed' %}
+                                                <a href="{{ url_for('payment', booking_id=booking.id) }}" class="btn btn-success btn-sm">Pay Now</a>
+                                            {% elif booking.status.value == 'completed' %}
+                                                <span class="badge bg-success">Paid</span>
+                                                <br>
+                                                <a href="{{ url_for('confirmation', booking_id=booking.id) }}" class="btn btn-outline-primary btn-sm mt-1">View Receipt</a>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

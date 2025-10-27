@@ -26,7 +26,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 init_app(app)
 
 
-
 # ---- Database Routes ----
 @app.route("/init-db")
 def init_db():
@@ -35,7 +34,7 @@ def init_db():
 
 @app.route("/")
 def home():
-    return "SniffSnuff running. Hit /init-db once to create tables."
+    return render_template("landing.html")
 
 # ---- Dummy Routes ----
 
@@ -59,6 +58,8 @@ def login():
             session['user_email'] = user.email
             session['user_id'] = user.id
 
+            flash(f"Welcome back, {user.first_name or user.email}!", "success")
+            
             if user.role == Role.customer:
                 return redirect(url_for("owner_dashboard")) 
             else:  
@@ -96,8 +97,17 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        flash(f"User {email} registered successfully!", "success")
-        return redirect(url_for("register"))
+        # Auto-login after registration
+        session['user_email'] = new_user.email
+        session['user_id'] = new_user.id
+        
+        flash(f"Welcome to Pawsie, {email}! Please complete your profile.", "success")
+        
+        # Redirect to appropriate dashboard
+        if user_role == Role.customer:
+            return redirect(url_for("owner_dashboard"))
+        else:
+            return redirect(url_for("sitter_dashboard"))
 
     return render_template("register.html")
 
@@ -329,6 +339,104 @@ def update_booking_status(booking_id):
     
     flash(f"Booking {new_status} successfully!", "success")
     return redirect(url_for("sitter_inbox"))
+
+@app.route("/payment/<int:booking_id>", methods=["GET", "POST"])
+def payment(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    
+    # Check if booking is confirmed and not already paid
+    if booking.status != BookingStatus.confirmed:
+        flash("Booking must be confirmed before payment.", "warning")
+        return redirect(url_for("owner_bookings"))
+    
+    # Check if payment already exists
+    existing_payment = Payment.query.filter_by(booking_id=booking_id).first()
+    if existing_payment:
+        flash("Payment already processed for this booking.", "info")
+        return redirect(url_for("confirmation", booking_id=booking_id))
+    
+    if request.method == "POST":
+        # Create mock payment
+        new_payment = Payment(
+            booking_id=booking_id,
+            amount=booking.fixed_amount,
+            payment_method=request.form.get("payment_method", "credit_card"),
+            payment_status="completed",
+            transaction_id=f"TXN{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        )
+        
+        db.session.add(new_payment)
+        
+        # Update booking status to completed (paid)
+        booking.status = BookingStatus.completed
+        booking.completed_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        return redirect(url_for("confirmation", booking_id=booking_id))
+    
+    return render_template("payment.html", booking=booking)
+
+
+@app.route("/confirmation/<int:booking_id>")
+def confirmation(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    payment = Payment.query.filter_by(booking_id=booking_id).first()
+    
+    if not payment:
+        flash("No payment found for this booking.", "warning")
+        return redirect(url_for("owner_bookings"))
+    
+    return render_template("confirmation.html", booking=booking, payment=payment)
+
+@app.route("/download-receipt/<int:booking_id>")
+def download_receipt(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    payment = Payment.query.filter_by(booking_id=booking_id).first()
+    
+    if not payment:
+        flash("No payment found for this booking.", "warning")
+        return redirect(url_for("owner_bookings"))
+    
+    # Create simple text receipt
+    receipt_content = f"""
+PAWSIE - PET SITTING SERVICES
+===============================
+RECEIPT
+===============================
+Booking ID: {booking.id}
+Transaction ID: {payment.transaction_id}
+Date: {payment.paid_at.strftime('%d/%m/%Y %H:%M')}
+
+SERVICE DETAILS:
+----------------
+Service: {booking.service.service_type.value.title()}
+Sitter: {booking.sitter.first_name} {booking.sitter.last_name}
+Pet: {booking.pet_name} ({booking.pet_type})
+Dates: {booking.start_date.strftime('%d/%m/%Y')} to {booking.end_date.strftime('%d/%m/%Y')}
+
+PAYMENT DETAILS:
+----------------
+Amount: ${booking.fixed_amount:.2f}
+Payment Method: {payment.payment_method}
+Status: {payment.payment_status}
+
+Thank you for choosing Pawsie!
+===============================
+    """
+    
+    # Return as downloadable file
+    from io import StringIO
+    from flask import make_response
+    
+    output = StringIO()
+    output.write(receipt_content)
+    
+    response = make_response(output.getvalue())
+    response.headers["Content-Disposition"] = f"attachment; filename=receipt_{booking.id}.txt"
+    response.headers["Content-type"] = "text/plain"
+    
+    return response
 
 
 # ---- Run app ----
