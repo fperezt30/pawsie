@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Owner Dashboard - Pawsie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Navigation</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="{{ url_for('owner_dashboard') }}" class="text-decoration-none">My Profile</a></li>
+                            <li><a href="{{ url_for('search') }}" class="text-decoration-none">Find Sitters</a></li>
+                            <li><a href="{{ url_for('owner_bookings') }}" class="text-decoration-none">My Bookings</a></li>
+                            <li><a href="{{ url_for('login') }}" class="text-decoration-none text-danger">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Owner Dashboard</h2>
+                        
+                        {% with messages = get_flashed_messages(with_categories=True) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category }} mb-3">
+                                        {{ message }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <h4 class="mt-4">Complete Your Profile</h4>
+                        <form method="POST">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">First Name</label>
+                                    <input type="text" name="first_name" id="first_name" class="form-control" 
+                                           value="{{ user.first_name or '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Last Name</label>
+                                    <input type="text" name="last_name" id="last_name" class="form-control" 
+                                           value="{{ user.last_name or '' }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" name="phone" id="phone" class="form-control" 
+                                       value="{{ user.phone or '' }}" required>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="suburb" class="form-label">Suburb</label>
+                                    <input type="text" name="suburb" id="suburb" class="form-control" 
+                                           value="{{ user.suburb or '' }}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" name="city" id="city" class="form-control" 
+                                           value="{{ user.city or 'Sydney' }}" required>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

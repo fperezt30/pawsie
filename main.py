@@ -1,6 +1,6 @@
  
-from flask import Flask, render_template, request, redirect, url_for, flash
-from database import db, User, Role, init_app
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from database import db, User, Role, SitterService, ServiceType, Booking, BookingStatus, Payment, init_app
 
 # ---- App and Config ----
 app = Flask(__name__)
@@ -41,7 +41,15 @@ def login():
         user = User.query.filter_by(email=email).first()
 
         if user and user.password == password:
-            return render_template("customer_dash.html", user_email=user.email)
+            
+            # STORE USER IN SESSION
+            session['user_email'] = user.email
+            session['user_id'] = user.id
+
+            if user.role == Role.customer:
+                return redirect(url_for("owner_dashboard")) 
+            else:  
+                return redirect(url_for("sitter_dashboard"))  
         else:
             flash("Invalid email or password.", "danger")
             return redirect(url_for("login"))
@@ -110,6 +118,103 @@ def reset_db():
     # Recreate all tables
     db.create_all()
     return "Database reset complete!"
+
+# ---- Owner Dashboard ----
+
+
+@app.route("/owner-dashboard")
+def owner_dashboard():
+    user = User.query.filter_by(email=session.get('user_email')).first()
+    
+    if request.method == "POST":
+        # Update user profile
+        user.first_name = request.form.get("first_name")
+        user.last_name = request.form.get("last_name")
+        user.phone = request.form.get("phone")
+        user.suburb = request.form.get("suburb")
+        user.city = request.form.get("city", "Sydney")  # Default to Sydney
+        
+        db.session.commit()
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for("owner_dash"))
+    
+    return render_template("owner_dash.html", user=user)
+    
+
+# ---- Sitter Dashboard ----
+
+@app.route("/sitter-dashboard")  
+def sitter_dashboard():
+    user = User.query.filter_by(email=session.get('user_email')).first()
+    
+    if request.method == "POST":
+        # Check if it's profile update or service setup
+        if "first_name" in request.form:
+            # Update user profile
+            user.first_name = request.form.get("first_name")
+            user.last_name = request.form.get("last_name")
+            user.phone = request.form.get("phone")
+            user.suburb = request.form.get("suburb")
+            user.city = request.form.get("city", "Sydney")
+            
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+        
+        elif "boarding_rate" in request.form:
+            # Setup sitter services
+            setup_sitter_services(user)
+            flash("Services setup successfully!", "success")
+            
+        return redirect(url_for("sitter_dash"))
+
+    # Get existing services
+    services = SitterService.query.filter_by(sitter_id=user.id).all()
+    return render_template("sitter_dash.html", user=user, services=services)
+
+def setup_sitter_services(user):
+    """Create or update the 3 fixed services for a sitter"""
+    services_data = [
+        (ServiceType.boarding, float(request.form.get("boarding_rate"))),
+        (ServiceType.daycare, float(request.form.get("daycare_rate"))),
+        (ServiceType.walking, float(request.form.get("walking_rate")))
+    ]
+    
+    for service_type, rate in services_data:
+        # Check if service already exists
+        existing_service = SitterService.query.filter_by(
+            sitter_id=user.id, 
+            service_type=service_type
+        ).first()
+        
+        if existing_service:
+            # Update existing service
+            existing_service.fixed_rate = rate
+        else:
+            # Create new service
+            new_service = SitterService(
+                sitter_id=user.id,
+                service_type=service_type,
+                fixed_rate=rate,
+                description=f"{service_type.value.title()} service"
+            )
+            db.session.add(new_service)
+    
+    db.session.commit()
+
+
+@app.route("/sitter-inbox")
+def sitter_inbox():
+    return "Sitter Inbox - Coming Soon"  # Placeholder for now
+
+
+@app.route("/owner-bookings")
+def owner_bookings():
+    return "Owner Bookings - Coming Soon"  # Placeholder for now
+
+
+@app.route("/search")
+def search():
+    return "Search Page - Coming Soon"  # Placeholder for now
 
 # ---- Run app ----
 if __name__ == "__main__":
