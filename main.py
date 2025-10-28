@@ -33,9 +33,23 @@ def init_db():
     db.create_all()
     return "Database initialized!"
 
+
+# ---- Home Routes ----
+
 @app.route("/")
 def home():
     return render_template("landing.html")
+
+
+# ---- Reset Database Routes ----
+
+@app.route("/reset-db")
+def reset_db():
+    # Drop all tables
+    db.drop_all()
+    # Recreate all tables
+    db.create_all()
+    return "Database reset complete!"
 
 
 # ---- Login Routes ----
@@ -128,16 +142,6 @@ def validate_password_strength(password):
     return True
     
 
-
-# ---- Reset Database Routes ----
-
-@app.route("/reset-db")
-def reset_db():
-    # Drop all tables
-    db.drop_all()
-    # Recreate all tables
-    db.create_all()
-    return "Database reset complete!"
 
 # ---- Owner Dashboard ----
 
