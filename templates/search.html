@@ -90,12 +90,6 @@
                                                 <i class="bi bi-geo-alt"></i> 
                                                 <strong>{{ sitter_data.sitter.suburb }}, {{ sitter_data.sitter.city }}</strong>
                                             </p>
-                                            {% if sitter_data.sitter.phone %}
-                                            <p class="card-text">
-                                                <i class="bi bi-telephone"></i> 
-                                                {{ sitter_data.sitter.phone }}
-                                            </p>
-                                            {% endif %}
                                             
                                             <hr>
                                             
@@ -106,11 +100,11 @@
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <div>
                                                             {% if service.service_type.value == 'boarding' %}
-                                                                <span class="badge bg-primary">🐕 Boarding</span>
+                                                                <span class="badge bg-info">Boarding</span>
                                                             {% elif service.service_type.value == 'daycare' %}
-                                                                <span class="badge bg-success">🏠 Daycare</span>
+                                                                <span class="badge bg-info"> Daycare</span>
                                                             {% elif service.service_type.value == 'walking' %}
-                                                                <span class="badge bg-info">🚶 Walking</span>
+                                                                <span class="badge bg-info"> Walking</span>
                                                             {% endif %}
                                                             <strong class="ms-2">${{ "%.2f"|format(service.fixed_rate) }}</strong>
                                                         </div>

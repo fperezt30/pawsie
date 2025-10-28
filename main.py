@@ -3,7 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from database import db, User, Role, SitterService, ServiceType, Booking, BookingStatus, Payment, init_app
 from datetime import datetime, date
 
-# ---- Setting Constants ----
+# ---- Setting Constants  ----
 
 SYDNEY_SUBURBS = [
     "Alexandria", "Ashfield", "Balmain", "Bankstown", "Bondi", "Bondi Beach", "Bondi Junction",
@@ -22,7 +22,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
-# Initialize database with app
+#-- Initialize database with app--
 init_app(app)
 
 
@@ -36,11 +36,6 @@ def init_db():
 def home():
     return render_template("landing.html")
 
-# ---- Dummy Routes ----
-
-@app.route("/hello")
-def hello():
-    return "Hello World"
 
 # ---- Login Routes ----
 
