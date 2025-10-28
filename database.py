@@ -1,6 +1,11 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 import enum
+from flask_bcrypt import Bcrypt
+
+#--Initialize the Bcrypt instance--#
+
+bcrypt = Bcrypt()
 
 #--Initialize the SQLAlchemy instance--#
 
@@ -78,8 +83,8 @@ class Booking(db.Model):
     status = db.Column(db.Enum(BookingStatus), default=BookingStatus.pending)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
-    # Fixed pricing (copied from service at booking time)
-    fixed_amount = db.Column(db.Float, nullable=False)
+    total_days = db.Column(db.Integer, nullable=False)
+    total_amount = db.Column(db.Float, nullable=False)
     pet_type = db.Column(db.String(100), nullable=False)
     pet_name = db.Column(db.String(100), nullable=False)
     special_instructions = db.Column(db.Text)
@@ -104,3 +109,4 @@ class Payment(db.Model):
 
 def init_app(app):
     db.init_app(app)
+    bcrypt.init_app(app)  

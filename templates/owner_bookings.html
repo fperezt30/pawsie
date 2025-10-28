@@ -81,7 +81,11 @@
                                             {{ booking.start_date.strftime('%d/%m/%Y') }}<br>
                                             <small>to {{ booking.end_date.strftime('%d/%m/%Y') }}</small>
                                         </td>
-                                        <td><strong>${{ "%.2f"|format(booking.fixed_amount) }}</strong></td>
+                                        <td>
+                                            <strong>${{ "%.2f"|format(booking.total_amount) }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ booking.total_days }} day(s) * ${{ "%.2f"|format(booking.service.fixed_rate) }}/day</small>
+                                        </td>
                                         <td>
                                             {% if booking.status.value == 'pending' %}
                                                 <span class="badge bg-warning">⏳ Pending</span>

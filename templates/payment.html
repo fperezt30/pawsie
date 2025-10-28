@@ -22,11 +22,16 @@
                             <p class="mb-1"><strong>Service:</strong> {{ booking.service.service_type.value.title() }}</p>
                             <p class="mb-1"><strong>Sitter:</strong> {{ booking.sitter.first_name }} {{ booking.sitter.last_name }}</p>
                             <p class="mb-1"><strong>Pet:</strong> {{ booking.pet_name }} ({{ booking.pet_type }})</p>
-                            <p class="mb-0"><strong>Dates:</strong> {{ booking.start_date.strftime('%d/%m/%Y') }} to {{ booking.end_date.strftime('%d/%m/%Y') }}</p>
+                            <p class="mb-1"><strong>Dates:</strong> {{ booking.start_date.strftime('%d/%m/%Y') }} to {{ booking.end_date.strftime('%d/%m/%Y') }}</p>
+                            <p class="mb-1"><strong>Duration:</strong> {{ booking.total_days }} day(s)</p>
+                            <p class="mb-0"><strong>Daily Rate:</strong> ${{ "%.2f"|format(booking.service.fixed_rate) }}/day</p>
                         </div>
 
                         <div class="text-center mb-4">
-                            <h2 class="text-success">Total: ${{ "%.2f"|format(booking.fixed_amount) }}</h2>
+                            <h2 class="text-success">
+                                {{ booking.total_days }} day(s) × ${{ "%.2f"|format(booking.service.fixed_rate) }} = 
+                                <strong>${{ "%.2f"|format(booking.total_amount) }}</strong>
+                            </h2>
                         </div>
 
                         <!-- Mock Payment Form -->

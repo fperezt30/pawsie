@@ -27,12 +27,15 @@
                                     <li><strong>Sitter:</strong> {{ booking.sitter.first_name }} {{ booking.sitter.last_name }}</li>
                                     <li><strong>Pet:</strong> {{ booking.pet_name }} ({{ booking.pet_type }})</li>
                                     <li><strong>Dates:</strong> {{ booking.start_date.strftime('%d/%m/%Y') }} to {{ booking.end_date.strftime('%d/%m/%Y') }}</li>
+                                    <li><strong>Duration:</strong> {{ booking.total_days }} day(s)</li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
                                 <h5>Payment Details</h5>
                                 <ul class="list-unstyled">
                                     <li><strong>Transaction ID:</strong> {{ payment.transaction_id }}</li>
+                                    <li><strong>Daily Rate:</strong> ${{ "%.2f"|format(booking.service.fixed_rate) }}/day</li>
+                                    <li><strong>Calculation:</strong> {{ booking.total_days }} day(s) × ${{ "%.2f"|format(booking.service.fixed_rate) }}</li>
                                     <li><strong>Amount Paid:</strong> ${{ "%.2f"|format(payment.amount) }}</li>
                                     <li><strong>Payment Method:</strong> {{ payment.payment_method.title() }}</li>
                                     <li><strong>Payment Date:</strong> {{ payment.paid_at.strftime('%d/%m/%Y %H:%M') }}</li>

@@ -1,7 +1,8 @@
  
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from database import db, User, Role, SitterService, ServiceType, Booking, BookingStatus, Payment, init_app
+from database import db, bcrypt, User, Role, SitterService, ServiceType, Booking, BookingStatus, Payment, init_app
 from datetime import datetime, date
+
 
 # ---- Setting Constants  ----
 
@@ -47,7 +48,7 @@ def login():
 
         user = User.query.filter_by(email=email).first()
 
-        if user and user.password == password:
+        if user and bcrypt.check_password_hash(user.password, password):
             
             # STORE USER IN SESSION
             session['user_email'] = user.email
@@ -88,7 +89,8 @@ def register():
 
         user_role = Role.customer if role_str == "customer" else Role.sitter
         
-        new_user = User(email=email, password=password, role=user_role)
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(email=email, password=hashed_password, role=user_role)
         db.session.add(new_user)
         db.session.commit()
 
@@ -292,6 +294,12 @@ def book_service(sitter_id):
         # Get current user (owner)
         owner = User.query.filter_by(email=session.get('user_email')).first()
         
+        # Calculate days and total
+        start_date = datetime.strptime(request.form.get("start_date"), '%Y-%m-%d').date()
+        end_date = datetime.strptime(request.form.get("end_date"), '%Y-%m-%d').date()
+        total_days = (end_date - start_date).days + 1
+        total_amount = total_days * service.fixed_rate
+
         # Create booking
         new_booking = Booking(
             owner_id=owner.id,
@@ -299,7 +307,8 @@ def book_service(sitter_id):
             service_id=service.id,
             start_date=datetime.strptime(request.form.get("start_date"), '%Y-%m-%d'),
             end_date=datetime.strptime(request.form.get("end_date"), '%Y-%m-%d'),
-            fixed_amount=service.fixed_rate,
+            total_days=total_days, 
+            total_amount=total_amount,  
             pet_type=request.form.get("pet_type"),
             pet_name=request.form.get("pet_name"),
             special_instructions=request.form.get("special_instructions", "")
@@ -354,7 +363,7 @@ def payment(booking_id):
         # Create mock payment
         new_payment = Payment(
             booking_id=booking_id,
-            amount=booking.fixed_amount,
+            amount=booking.total_amount,
             payment_method=request.form.get("payment_method", "credit_card"),
             payment_status="completed",
             transaction_id=f"TXN{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
@@ -409,10 +418,18 @@ Service: {booking.service.service_type.value.title()}
 Sitter: {booking.sitter.first_name} {booking.sitter.last_name}
 Pet: {booking.pet_name} ({booking.pet_type})
 Dates: {booking.start_date.strftime('%d/%m/%Y')} to {booking.end_date.strftime('%d/%m/%Y')}
+Duration: {booking.total_days} day(s)
+
+PAYMENT CALCULATION:
+--------------------
+Daily Rate: ${booking.service.fixed_rate:.2f}/day
+Days Booked: {booking.total_days} day(s)
+Calculation: {booking.total_days} × ${booking.service.fixed_rate:.2f}
+
 
 PAYMENT DETAILS:
 ----------------
-Amount: ${booking.fixed_amount:.2f}
+Total Amount: ${payment.amount:.2f}
 Payment Method: {payment.payment_method}
 Status: {payment.payment_status}
 
