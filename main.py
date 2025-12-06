@@ -2,6 +2,8 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from database import db, bcrypt, User, Role, SitterService, ServiceType, Booking, BookingStatus, Payment, init_app
 from datetime import datetime, date
+import os
+from urllib.parse import urlparse
 
 
 # ---- Setting Constants  ----
@@ -19,9 +21,26 @@ SYDNEY_SUBURBS = [
 # ---- App and Config ----
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "dev-change-me"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+# ---- Database Configuration ----
+# Check if we're on Render (has DATABASE_URL) or local development
+if os.environ.get('DATABASE_URL'):
+    # Render provides DATABASE_URL for PostgreSQL
+    database_url = os.environ.get('DATABASE_URL')
+    
+    # Fix for SQLAlchemy + Render compatibility
+    # Render gives: "postgres://user:pass@host:port/db"
+    # SQLAlchemy needs: "postgresql://user:pass@host:port/db"
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+    print("✅ Using PostgreSQL (Render/Production)")
+else:
+    # Local development - use SQLite
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+    print("✅ Using SQLite (Local Development)")
 
 #-- Initialize database with app--
 init_app(app)
@@ -457,4 +476,6 @@ Thank you for choosing Pawsie!
 
 # ---- Run app ----
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)

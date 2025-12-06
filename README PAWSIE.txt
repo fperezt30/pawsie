@@ -13,3 +13,4 @@ README PAWSIE:
 8. The project should be visible on "http://localhost:5000/login", some data example are provided below.
 
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
