@@ -12,4 +12,3 @@ typing_extensions==4.15.0
 Flask-Bcrypt==1.0.1
 pg8000==1.30.3
 gunicorn==21.2.0
-psycopg2-binary==2.9.9

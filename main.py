@@ -4,7 +4,6 @@ from database import db, bcrypt, User, Role, SitterService, ServiceType, Booking
 from datetime import datetime, date
 import os
 from urllib.parse import urlparse
-import psycopg2
 
 
 # ---- Setting Constants  ----
@@ -25,21 +24,20 @@ app.config["SECRET_KEY"] = "dev-change-me"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # ---- Database Configuration ----
-# Check if we're on Render (has DATABASE_URL) or local development
+# Database config - UPDATED for pg8000
 if os.environ.get('DATABASE_URL'):
-    # Render provides DATABASE_URL for PostgreSQL
     database_url = os.environ.get('DATABASE_URL')
     
-    # Fix for SQLAlchemy + Render compatibility
-    # Render gives: "postgres://user:pass@host:port/db"
-    # SQLAlchemy needs: "postgresql://user:pass@host:port/db"
+    # Fix for Render + SQLAlchemy + pg8000
+    # Replace postgres:// with postgresql+pg8000://
     if database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        database_url = database_url.replace('postgres://', 'postgresql+pg8000://', 1)
+    elif database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+pg8000://', 1)
     
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    print("✅ Using PostgreSQL (Render/Production)")
+    print("✅ Using PostgreSQL with pg8000 (Render/Production)")
 else:
-    # Local development - use SQLite
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
     print("✅ Using SQLite (Local Development)")
 
