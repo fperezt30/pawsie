@@ -4,6 +4,7 @@ from database import db, bcrypt, User, Role, SitterService, ServiceType, Booking
 from datetime import datetime, date
 import os
 from urllib.parse import urlparse
+import psycopg2
 
 
 # ---- Setting Constants  ----
