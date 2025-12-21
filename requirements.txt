@@ -10,5 +10,5 @@ click==8.2.1
 greenlet==3.2.4
 typing_extensions==4.15.0
 Flask-Bcrypt==1.0.1
-pg8000==1.30.3
+psycopg2-binary==2.9.6
 gunicorn==21.2.0

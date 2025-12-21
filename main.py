@@ -24,22 +24,26 @@ app.config["SECRET_KEY"] = "dev-change-me"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # ---- Database Configuration ----
-# Database config - UPDATED for pg8000
+# Database config - Supabase / PostgreSQL (psycopg2)
 if os.environ.get('DATABASE_URL'):
     database_url = os.environ.get('DATABASE_URL')
     
-    # Fix for Render + SQLAlchemy + pg8000
-    # Replace postgres:// with postgresql+pg8000://
-    if database_url.startswith('postgres://'):
-        database_url = database_url.replace('postgres://', 'postgresql+pg8000://', 1)
-    elif database_url.startswith('postgresql://'):
-        database_url = database_url.replace('postgresql://', 'postgresql+pg8000://', 1)
+    # Supabase / PostgreSQL (psycopg2)
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif database_url.startswith("postgresql://"):
+        database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
     
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    print("✅ Using PostgreSQL with pg8000 (Render/Production)")
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"connect_args": {"sslmode": "require"}}
+    print("✅ Using PostgreSQL (Supabase / Production)")
+    
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
     print("✅ Using SQLite (Local Development)")
+
+parsed = urlparse(database_url)
+print(f"✅ DB host: {parsed.hostname}")
 
 #-- Initialize database with app--
 init_app(app)
