@@ -63,6 +63,15 @@ def home():
     return render_template("landing.html")
 
 
+# ---- Health Cron every 6 days Routes ----
+
+@app.route("/health/db")
+def db_health():
+    # Minimal DB interaction
+    db.session.execute("SELECT 1")
+    return "OK", 200
+
+
 # ---- Reset Database Routes ----
 
 @app.route("/reset-db")
