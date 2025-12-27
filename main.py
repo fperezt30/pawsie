@@ -20,7 +20,7 @@ SYDNEY_SUBURBS = [
 
 # ---- App and Config ----
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "dev-change-me"
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-change-me")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # ---- Database Configuration ----
