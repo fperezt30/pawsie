@@ -69,3 +69,183 @@ body.public-page {
     background: rgba(248, 249, 250, 0.75);
     border-radius: 20px;
 }
+
+.app-shell {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.nav-card,
+.content-card,
+.surface-card {
+    background: rgba(255, 255, 255, 0.92);
+    border: 0;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(36, 50, 61, 0.12);
+    backdrop-filter: blur(8px);
+}
+
+.content-card .card-header,
+.surface-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(36, 50, 61, 0.08);
+}
+
+.success-header {
+    background: linear-gradient(135deg, #5fa57f, #78bc91) !important;
+    color: white;
+}
+
+.nav-card a {
+    color: var(--pawsie-ink);
+}
+
+.nav-card a:hover {
+    color: var(--pawsie-coral);
+}
+
+.nav-link-active {
+    color: var(--pawsie-coral) !important;
+    font-weight: 700;
+}
+
+.app-title {
+    color: var(--pawsie-ink);
+    font-weight: 700;
+}
+
+.muted-panel {
+    background: rgba(248, 249, 250, 0.72);
+    border: 0;
+    border-radius: 18px;
+}
+
+.highlight-panel {
+    background: rgba(217, 119, 87, 0.12);
+    border: 1px solid rgba(217, 119, 87, 0.14);
+    color: var(--pawsie-ink);
+    border-radius: 18px;
+}
+
+.table-shell {
+    background: rgba(255, 255, 255, 0.55);
+    border-radius: 18px;
+    padding: 0.5rem;
+}
+
+.table-shell .table {
+    margin-bottom: 0;
+}
+
+.table-shell .table thead th {
+    color: var(--pawsie-ink);
+    border-bottom-color: rgba(36, 50, 61, 0.1);
+}
+
+.table-shell .table td,
+.table-shell .table th {
+    background: transparent;
+}
+
+.page-link-inline {
+    color: var(--pawsie-coral);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.page-link-inline:hover {
+    color: var(--pawsie-ink);
+}
+
+.badge-soft {
+    background: rgba(217, 119, 87, 0.12);
+    color: var(--pawsie-coral);
+}
+
+.badge-success-soft {
+    background: rgba(95, 165, 127, 0.14);
+    color: #2f6a4d;
+}
+
+.badge-warning-soft {
+    background: rgba(240, 189, 99, 0.18);
+    color: #8d6121;
+}
+
+.badge-danger-soft {
+    background: rgba(200, 92, 92, 0.14);
+    color: #8b2d2d;
+}
+
+.auth-wrap {
+    min-height: 100vh;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.94);
+    border: 0;
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(36, 50, 61, 0.14);
+    backdrop-filter: blur(8px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--pawsie-coral), var(--pawsie-gold));
+    border: 0;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    opacity: 0.95;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #5fa57f, #78bc91);
+    border: 0;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    opacity: 0.95;
+}
+
+.btn-outline-primary {
+    border-color: rgba(217, 119, 87, 0.42);
+    color: var(--pawsie-coral);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background: rgba(217, 119, 87, 0.08);
+    border-color: rgba(217, 119, 87, 0.42);
+    color: var(--pawsie-coral);
+}
+
+.btn-outline-secondary {
+    border-color: rgba(36, 50, 61, 0.18);
+    color: var(--pawsie-ink);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+    background: rgba(36, 50, 61, 0.06);
+    border-color: rgba(36, 50, 61, 0.18);
+    color: var(--pawsie-ink);
+}
+
+.form-control,
+.form-select,
+.input-group-text {
+    border-color: rgba(36, 50, 61, 0.12);
+    border-radius: 14px;
+}
+
+.input-group > .form-control,
+.input-group > .form-select {
+    border-radius: 14px 0 0 14px;
+}
+
+.input-group > .btn,
+.input-group > .input-group-text {
+    border-radius: 0 14px 14px 0;
+}
