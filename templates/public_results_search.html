@@ -6,13 +6,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --pawsie-sand: #f6efe5;
+            --pawsie-ink: #24323d;
+            --pawsie-coral: #d97757;
+            --pawsie-gold: #f0bd63;
+        }
+
+        body {
+            background:
+                linear-gradient(135deg, rgba(246, 239, 229, 0.96), rgba(255, 255, 255, 0.90)),
+                url('https://offthestream.com/wp-content/uploads/2025/12/unsplash-pawsie-1974.webp') center/cover fixed;
+            color: var(--pawsie-ink);
+            min-height: 100vh;
+        }
+
+        .hero-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 0;
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(36, 50, 61, 0.14);
+            backdrop-filter: blur(8px);
+        }
+
+        .eyebrow {
+            color: var(--pawsie-coral);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .find-btn {
+            background: linear-gradient(135deg, var(--pawsie-coral), var(--pawsie-gold));
+            border: 0;
+            color: white;
+            font-weight: 700;
+        }
+
+        .find-btn:hover {
+            color: white;
+            opacity: 0.95;
+        }
+
+        .soft-btn {
+            border-color: rgba(36, 50, 61, 0.18);
+            color: var(--pawsie-ink);
+        }
+
+        .soft-btn:hover {
+            background: rgba(36, 50, 61, 0.06);
+            color: var(--pawsie-ink);
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 0;
+            border-radius: 20px;
+            box-shadow: 0 18px 44px rgba(36, 50, 61, 0.10);
+        }
+
+        .service-pill {
+            background: rgba(217, 119, 87, 0.12);
+            color: var(--pawsie-coral);
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
     <div class="container py-4">
+        <div class="hero-card p-4 p-md-5">
         <div class="row g-4">
             <div class="col-lg-4 col-xl-3">
-                <div class="card shadow-sm">
+                <div class="card hero-card">
                     <div class="card-body">
+                        <p class="eyebrow mb-2">For Pet Owners</p>
                         <h1 class="h4 mb-3">Find pet sitters</h1>
                         <p class="text-muted small">Update your filters to explore available sitters nearby.</p>
 
@@ -46,8 +114,8 @@
                             </div>
 
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Find</button>
-                                <a href="{{ url_for('public_landing') }}" class="btn btn-outline-secondary">Back to search</a>
+                                <button type="submit" class="btn find-btn">Find</button>
+                                <a href="{{ url_for('public_landing') }}" class="btn btn-outline-secondary soft-btn">Back to search</a>
                             </div>
                         </form>
                     </div>
@@ -68,7 +136,7 @@
                     </div>
                     <div class="mt-3 mt-md-0">
                         {% if sitter_services %}
-                        <span class="badge text-bg-success fs-6">{{ sitter_services|length }} service(s) found</span>
+                        <span class="badge fs-6 service-pill">{{ sitter_services|length }} service(s) found</span>
                         {% endif %}
                     </div>
                 </div>
@@ -85,7 +153,7 @@
 
                         {% for sitter_id, sitter_data in sitters_dict.items() %}
                         <div class="col-md-6 mb-4">
-                            <div class="card h-100 shadow-sm border-0">
+                            <div class="card h-100 service-card">
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                         <div>
@@ -95,7 +163,7 @@
                                                 {{ sitter_data.sitter.suburb }}, {{ sitter_data.sitter.city }}
                                             </p>
                                         </div>
-                                        <span class="badge text-bg-light">Verified profile</span>
+                                        <span class="badge service-pill">Verified profile</span>
                                     </div>
 
                                     <h4 class="h6 text-uppercase text-muted mb-3">Services</h4>
@@ -108,11 +176,11 @@
                                             </div>
                                             {% if session.get('user_id') %}
                                             <a href="{{ url_for('book_service', sitter_id=sitter_data.sitter.id, service_type=service.service_type.value) }}"
-                                               class="btn btn-primary btn-sm">
+                                               class="btn find-btn btn-sm">
                                                 Book now
                                             </a>
                                             {% else %}
-                                            <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-sm">
+                                            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary soft-btn btn-sm">
                                                 Log in to book
                                             </a>
                                             {% endif %}
@@ -125,20 +193,21 @@
                         {% endfor %}
                     {% else %}
                         <div class="col-12">
-                            <div class="card shadow-sm border-0">
+                            <div class="card service-card">
                                 <div class="card-body text-center py-5">
                                     <i class="bi bi-search display-4 text-muted"></i>
                                     <h3 class="h4 mt-3">No sitters found</h3>
                                     <p class="text-muted mb-4">
                                         Try a different suburb or broaden the service filter to see more options.
                                     </p>
-                                    <a href="{{ url_for('public_landing') }}" class="btn btn-primary">Start a new search</a>
+                                    <a href="{{ url_for('public_landing') }}" class="btn find-btn">Start a new search</a>
                                 </div>
                             </div>
                         </div>
                     {% endif %}
                 </div>
             </div>
+        </div>
         </div>
     </div>
 
