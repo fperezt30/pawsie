@@ -5,52 +5,9 @@
     <title>Pawsie - Find Pet Sitters Near You</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --pawsie-sand: #f6efe5;
-            --pawsie-ink: #24323d;
-            --pawsie-coral: #d97757;
-            --pawsie-gold: #f0bd63;
-        }
-
-        body {
-            background:
-                linear-gradient(135deg, rgba(246, 239, 229, 0.96), rgba(255, 255, 255, 0.90)),
-                url('https://offthestream.com/wp-content/uploads/2025/12/unsplash-pawsie-1974.webp') center/cover fixed;
-            color: var(--pawsie-ink);
-            min-height: 100vh;
-        }
-
-        .hero-card {
-            background: rgba(255, 255, 255, 0.92);
-            border: 0;
-            border-radius: 24px;
-            box-shadow: 0 24px 60px rgba(36, 50, 61, 0.14);
-            backdrop-filter: blur(8px);
-        }
-
-        .eyebrow {
-            color: var(--pawsie-coral);
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        .find-btn {
-            background: linear-gradient(135deg, var(--pawsie-coral), var(--pawsie-gold));
-            border: 0;
-            color: white;
-            font-weight: 700;
-        }
-
-        .find-btn:hover {
-            color: white;
-            opacity: 0.95;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
 </head>
-<body>
+<body class="public-page">
     <div class="container py-5">
         <div class="row justify-content-center align-items-center min-vh-100">
             <div class="col-lg-10">
@@ -64,7 +21,7 @@
                             </p>
                         </div>
                         <div class="col-lg-6">
-                            <div class="card border-0 bg-light-subtle">
+                            <div class="card border-0 public-panel">
                                 <div class="card-body p-4">
                                     <h2 class="h4 mb-4">Start your search</h2>
                                     <form method="GET" action="{{ url_for('public_results_search') }}">
