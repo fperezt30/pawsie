@@ -40,6 +40,7 @@ if os.environ.get('DATABASE_URL'):
     
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
+    database_url = app.config["SQLALCHEMY_DATABASE_URI"]
     print("✅ Using SQLite (Local Development)")
 
 parsed = urlparse(database_url)
@@ -61,6 +62,11 @@ def init_db():
 @app.route("/")
 def home():
     return render_template("landing.html")
+
+
+@app.route("/public-landing")
+def public_landing():
+    return render_template("public_landing.html", suburbs=SYDNEY_SUBURBS)
 
 
 # ---- Health Cron every 6 days Routes ----
@@ -171,6 +177,28 @@ def validate_password_strength(password):
     if not any(char.islower() for char in password):
         return False
     return True
+
+
+def get_filtered_sitter_services(suburb="", service_type=""):
+    """Return active sitter services filtered by suburb and/or service type."""
+    query = SitterService.query.join(User).filter(
+        SitterService.is_active == True,
+        User.first_name.isnot(None)
+    )
+
+    suburb = (suburb or "").strip()
+    service_type = (service_type or "").strip()
+
+    if suburb:
+        query = query.filter(User.suburb.ilike(f"%{suburb}%"))
+
+    if service_type:
+        try:
+            query = query.filter(SitterService.service_type == ServiceType(service_type))
+        except ValueError:
+            return []
+
+    return query.order_by(User.first_name.asc(), SitterService.fixed_rate.asc()).all()
     
 
 
@@ -286,31 +314,34 @@ def owner_bookings():
 
 @app.route("/search")
 def search():
-    # Get search filters from URL parameters
     suburb = request.args.get("suburb", "")
     service_type = request.args.get("service_type", "")
-    
-    # Build the query
-    query = SitterService.query.join(User).filter(
-        SitterService.is_active == True,
-        User.first_name.isnot(None)  # Only show sitters who completed profile
+    sitter_services = get_filtered_sitter_services(suburb=suburb, service_type=service_type)
+
+    return render_template(
+        "search.html",
+        sitter_services=sitter_services,
+        suburb=suburb,
+        suburb_filter=suburb,
+        service_type=service_type,
+        suburbs=SYDNEY_SUBURBS
     )
-    
-    # Apply filters
-    if suburb:
-        query = query.filter(User.suburb == suburb)
-    
-    if service_type:
-        query = query.filter(SitterService.service_type == ServiceType(service_type))
-    
-    # Get results
-    sitter_services = query.all()
-    
-    return render_template("search.html", 
-                         sitter_services=sitter_services, 
-                         suburb=suburb, 
-                         service_type=service_type,
-                         suburbs=SYDNEY_SUBURBS)
+
+
+@app.route("/public-results-search")
+def public_results_search():
+    suburb = request.args.get("suburb", "")
+    service_type = request.args.get("service_type", "")
+
+    sitter_services = get_filtered_sitter_services(suburb=suburb, service_type=service_type)
+
+    return render_template(
+        "public_results_search.html",
+        sitter_services=sitter_services,
+        suburb=suburb,
+        service_type=service_type,
+        suburbs=SYDNEY_SUBURBS
+    )
 
 #---- Booking Route ----
 
