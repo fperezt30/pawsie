@@ -1,0 +1,17 @@
+storytelling
+
+Try something random, and find an opportunity
+
+In October 2024, my wife and I rescued a dog in Peru
+I arrived to Sydney July 2025 and as we missed having our dog around in Peru, we decided why not try petsitting
+I open a profile in Pawshake and Madpaws, to do pet sitting, with average experience but much love.
+Quickly I notice that there was high demand of this service, and still many problems to solve for sitters/owners
+
+While taking care of dogs we discover many opportunities in workflow:
+- Entry Form
+- Dog Database
+- Calendar Status
+- AI isted response / advice
+
+I decided to create a platform that could address this kind of problems. Then we got Pawsie.
+Its MVP version includes regular booking workflow, but I've trying myself specific dedicated tools such as AI assisted sitter, and 
