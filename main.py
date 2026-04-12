@@ -61,7 +61,7 @@ def init_db():
 
 @app.route("/")
 def home():
-    return render_template("public-landing.html")
+    return render_template("public_landing.html")
 
 
 @app.route("/public-landing")
