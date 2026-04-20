@@ -14,7 +14,7 @@ body.public-page {
 }
 
 .hero-card {
-    background: rgba(255, 255, 255, 0.92);
+    background: rgba(255, 255, 255, 0.50);
     border: 0;
     border-radius: 24px;
     box-shadow: 0 24px 60px rgba(36, 50, 61, 0.14);
